@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão de Carrinhas</title>
+<style>
+  :root{
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --primary:#2563eb;
+    --primary-dark:#1d4ed8;
+    --border:#dbe2ea;
+    --danger:#dc2626;
+    --success:#059669;
+    --warning:#d97706;
+    --shadow:0 8px 25px rgba(31,41,55,.08);
+  }
+
+  *{box-sizing:border-box}
+
+  body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+
+  .page{
+    max-width:1250px;
+    margin:0 auto;
+    padding:28px;
+  }
+
+  .header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:18px;
+    margin-bottom:22px;
+  }
+
+  .header h1{
+    margin:0;
+    font-size:30px;
+  }
+
+  .header p{
+    margin:6px 0 0;
+    color:var(--muted);
+  }
+
+  .save-status{
+    color:var(--success);
+    font-size:14px;
+    font-weight:700;
+  }
+
+  .tabs{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+  }
+
+  .tab-btn{
+    border:1px solid var(--border);
+    background:#fff;
+    padding:12px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+    color:var(--text);
+    transition:.2s;
+  }
+
+  .tab-btn:hover{
+    border-color:var(--primary);
+    color:var(--primary);
+  }
+
+  .tab-btn.active{
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
+  }
+
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:18px;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:20px;
+  }
+
+  .card.full{grid-column:1 / -1}
+
+  .card h2{
+    margin:0 0 15px;
+    font-size:19px;
+  }
+
+  .form-row{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:12px;
+  }
+
+  label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    margin-bottom:6px;
+  }
+
+  input, textarea, select{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font:inherit;
+    background:#fff;
+    color:var(--text);
+  }
+
+  input:focus, textarea:focus, select:focus{
+    outline:none;
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(37,99,235,.10);
+  }
+
+  textarea{
+    min-height:90px;
+    resize:vertical;
+  }
+
+  .actions{
+    margin-top:12px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  button{
+    font:inherit;
+  }
+
+  .btn{
+    border:0;
+    border-radius:8px;
+    padding:10px 14px;
+    cursor:pointer;
+    font-weight:700;
+  }
+
+  .btn-primary{
+    background:var(--primary);
+    color:#fff;
+  }
+
+  .btn-primary:hover{background:var(--primary-dark)}
+
+  .btn-danger{
+    background:#fee2e2;
+    color:var(--danger);
+  }
+
+  .btn-small{
+    padding:6px 9px;
+    font-size:12px;
+  }
+
+  .info-box{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    align-items:center;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:13px 14px;
+    background:#f9fafb;
+    margin-top:10px;
+  }
+
+  .info-box .label{
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
+
+  .info-box .value{
+    font-size:17px;
+    font-weight:700;
+  }
+
+  .status{
+    font-size:12px;
+    font-weight:700;
+    padding:5px 8px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+
+  .status.ok{background:#d1fae5;color:#047857}
+  .status.warn{background:#fef3c7;color:#b45309}
+  .status.danger{background:#fee2e2;color:#b91c1c}
+
+  .table-wrap{
+    overflow-x:auto;
+    border:1px solid var(--border);
+    border-radius:10px;
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:650px;
+  }
+
+  th, td{
+    padding:11px 12px;
+    border-bottom:1px solid var(--border);
+    text-align:left;
+    vertical-align:top;
+  }
+
+  th{
+    background:#f3f4f6;
+    font-size:13px;
+  }
+
+  tr:last-child td{border-bottom:0}
+
+  .empty{
+    padding:18px;
+    color:var(--muted);
+    text-align:center;
+  }
+
+  .km-total{
+    font-size:28px;
+    font-weight:800;
+    color:var(--primary);
+    margin-top:4px;
+  }
+
+  .muted{
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .footer-note{
+    color:var(--muted);
+    text-align:center;
+    font-size:12px;
+    margin-top:20px;
+  }
+
+  @media (max-width:800px){
+    .page{padding:16px}
+    .grid,.form-row{grid-template-columns:1fr}
+    .card.full{grid-column:auto}
+    .header{align-items:flex-start;flex-direction:column}
+  }
+
+  .login-screen{display:none;max-width:460px;margin:0 0 20px auto}
+  .login-screen.is-open{display:block}
+  .login-box{background:white;padding:22px;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+  .login-box h2{margin:0 0 8px}
+  .login-box p{color:#6b7280;line-height:1.45}
+  .login-box input{margin:6px 0 12px}
+  .guest-banner{margin:14px 0 20px;background:#eff6ff;border:1px solid #bfdbfe;padding:13px 16px;border-radius:10px;color:#1e40af}
+  .readonly input,.readonly textarea,.readonly select,.readonly #panels button{pointer-events:none;opacity:.56}
+  .readonly #panels input,.readonly #panels textarea{background:#f8fafc}
+  .btn-login{background:var(--primary);color:#fff}
+  .app-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .app-tools .btn{font-size:13px}
+  .admin-only{display:none}
+  .admin-view .admin-only{display:inline-flex}
+  .audit-scroll{max-height:380px;overflow:auto}
+  .admin-card{display:none;margin-top:18px}
+  .admin-view .admin-card.is-open{display:block}
+  [hidden]{display:none !important}
+  .top-note{font-size:12px;color:#64748b;margin-top:9px}
+  @media print{
+    body{background:#fff}
+    .tabs,.actions,.footer-note,.save-status{display:none !important}
+    .tab-panel{display:block !important;page-break-after:always}
+    .card{box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>Gestão de Carrinhas</h1>
+      <p>Quilómetros, inspeções, revisões e histórico de avarias/assistências.</p>
+    </div>
+    <div id="saveStatus" class="save-status">A ligar ao Firebase…</div>
+  </div>
+
+  <div class="app-tools">
+    <span id="currentUser" class="muted"></span>
+    <button id="adminToggle" class="btn btn-primary admin-only" hidden onclick="toggleAdmin()">Administração — utilizadores e histórico</button>
+    <button id="openLogin" class="btn btn-login" onclick="toggleLogin()">Iniciar sessão</button>
+    <button id="logoutButton" class="btn" hidden style="background:#e5e7eb" onclick="logout()">Terminar sessão</button>
+  </div>
+  <div id="loginScreen" class="login-screen">
+    <div class="login-box">
+      <h2>Iniciar sessão</h2>
+      <p>Entrada dos administradores e funcionários.</p>
+      <label>Utilizador ou email</label><input id="authUsername" type="text" autocomplete="username" placeholder="Nome de utilizador">
+      <label>Palavra-passe</label><input id="authPassword" type="password" autocomplete="current-password">
+      <button class="btn btn-primary" style="width:100%" id="authButton" onclick="authenticate()">Entrar</button>
+      <p id="authError" role="alert" style="color:#b91c1c"></p>
+    </div>
+  </div>
+  <div id="guestBanner" class="guest-banner">As carrinhas estão disponíveis no menu. Inicia sessão para consultar os dados atualizados e registar alterações.</div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="van1">Carrinha 1</button>
+    <button class="tab-btn" data-tab="van2">Carrinha 2</button>
+    <button class="tab-btn" data-tab="van3">Carrinha 3</button>
+  </div>
+
+  <div id="panels"></div>
+
+  <section class="card admin-card" id="adminArea" hidden>
+    <h2>Administração</h2>
+    <p class="muted">Só o administrador pode gerir contas e consultar o histórico de alterações.</p>
+    <h3>Criar utilizador</h3>
+    <div class="form-row">
+      <div><label>Email do utilizador</label><input id="newUsername" type="email" placeholder="Ex.: joao@empresa.pt" autocomplete="off"></div>
+      <div><label>Palavra-passe inicial (mínimo 8 caracteres)</label><input id="newPassword" type="password" autocomplete="new-password"></div>
+    </div>
+    <div class="actions"><button class="btn btn-primary" onclick="createUser()">+ Criar utilizador</button></div>
+    <h3>Utilizadores registados</h3>
+    <div id="userList"></div>
+    <h3>Histórico de alterações</h3>
+    <div class="actions"><button class="btn" style="background:#e5e7eb" onclick="exportAudit()">Exportar histórico CSV</button></div>
+    <div id="auditList" class="audit-scroll"></div>
+    <p class="top-note">Os dados são sincronizados pelo Firebase. As permissões são aplicadas nas regras do Firestore. Para auditoria imutável com garantias adicionais, recomenda-se uma função de servidor.</p>
+  </section>
+  <div class="footer-note">
+    Dados sincronizados em tempo real com Firebase Firestore.
+  </div>
+</div>
+
+<script type="module">
+import {initializeApp, deleteApp} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+import {getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, setPersistence, browserLocalPersistence} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+import {getFirestore, doc, collection, query, orderBy, limit, onSnapshot, getDoc, getDocs, writeBatch, serverTimestamp, setDoc} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+
+// Configuração pública do projeto Firebase; não guardar palavras-passe neste ficheiro.
+const firebaseConfig = {
+  apiKey: 'AIzaSyCPSgxhbOadCuI5rQ4KomE5z9rJae2VLq8',
+  authDomain: 'carrinhas-5ea1d.firebaseapp.com',
+  projectId: 'carrinhas-5ea1d',
+  storageBucket: 'carrinhas-5ea1d.firebasestorage.app',
+  messagingSenderId: '932187291983',
+  appId: '1:932187291983:web:c6b5d740ed4d4549d3c53a'
+};
+const configured = !Object.values(firebaseConfig).some(v => String(v).startsWith('COLOCAR_'));
+const app = configured ? initializeApp(firebaseConfig) : null;
+const auth = app ? getAuth(app) : null;
+const db = app ? getFirestore(app) : null;
+const vanKeys=['van1','van2','van3'];
+const blankVan = index => ({name:`Carrinha ${index}`,plate:'',inspectionDate:'',revisionDate:'',kms:[],defects:[]});
+let data=Object.fromEntries(vanKeys.map((k,i)=>[k,blankVan(i+1)]));
+let loggedUser=null, accounts=[], audit=[], adminOpened=false;
+let unsubscribers=[];
+const $ = id => document.getElementById(id);
+function esc(v=''){return String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
+function formatDate(s){if(!s)return 'Não definida';let a=s.split('-');return `${a[2]}/${a[1]}/${a[0]}`}
+function formatMonth(s){if(!s)return '';const [y,m]=s.split('-');return `${['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][Number(m)-1]} ${y}`}
+function dateStatus(s){if(!s)return {text:'Sem data',cls:'warn'};const today=new Date();today.setHours(0,0,0,0);const d=Math.ceil((new Date(s+'T00:00:00')-today)/86400000);return d<0?{text:`Atrasada ${-d} dia(s)`,cls:'danger'}:d<=30?{text:`Faltam ${d} dia(s)`,cls:'warn'}:{text:`Faltam ${d} dia(s)`,cls:'ok'}}
+function message(s){$('saveStatus').textContent=s}
+function activeTab(){return document.querySelector('.tab-btn.active')?.dataset.tab || 'van1'}
+function setTab(key){document.querySelectorAll('.tab-panel').forEach(x=>x.classList.toggle('active',x.id===key));document.querySelectorAll('.tab-btn').forEach(x=>x.classList.toggle('active',x.dataset.tab===key))}
+function render(){
+  const current=activeTab();
+  $('panels').innerHTML=vanKeys.map((key,i)=>{
+    const van=data[key],total=van.kms.reduce((sum,r)=>sum+Number(r.km||0),0), ins=dateStatus(van.inspectionDate),rev=dateStatus(van.revisionDate);
+    return `<section class="tab-panel" id="${key}"><div class="grid">
+      <div class="card"><h2>Identificação da carrinha</h2><div class="form-row"><div><label>Nome / Designação</label><input value="${esc(van.name)}" data-field="name" data-van="${key}"></div><div><label>Matrícula</label><input value="${esc(van.plate)}" data-field="plate" data-van="${key}" placeholder="Ex.: AA-00-BB"></div></div></div>
+      <div class="card"><h2>Datas importantes</h2><label>Próxima inspeção</label><input type="date" value="${esc(van.inspectionDate)}" data-field="inspectionDate" data-van="${key}"><div class="info-box"><div><div class="label">Data</div><div class="value">${formatDate(van.inspectionDate)}</div></div><span class="status ${ins.cls}">${ins.text}</span></div><div style="height:14px"></div><label>Próxima revisão</label><input type="date" value="${esc(van.revisionDate)}" data-field="revisionDate" data-van="${key}"><div class="info-box"><div><div class="label">Data</div><div class="value">${formatDate(van.revisionDate)}</div></div><span class="status ${rev.cls}">${rev.text}</span></div></div>
+      <div class="card full"><h2>Quilómetros por mês</h2><div class="form-row"><div><label>Mês</label><input type="month" id="${key}-km-month"></div><div><label>Quilómetros realizados no mês</label><input type="number" min="0" step="1" id="${key}-km-value" placeholder="Ex.: 2500"></div></div><div class="actions"><button class="btn btn-primary" data-action="addKm" data-van="${key}">+ Adicionar quilómetros</button></div><div style="margin:18px 0 10px"><span class="muted">Total de quilómetros registados</span><div class="km-total">${total.toLocaleString('pt-PT')} km</div></div>${kmTable(key,van.kms)}</div>
+      <div class="card full"><h2>Histórico de defeitos e assistências</h2><div class="form-row"><div><label>Data em que o defeito foi identificado</label><input type="date" id="${key}-defect-date"></div><div><label>Data da assistência / reparação</label><input type="date" id="${key}-assist-date"></div></div><div style="margin-top:12px"><label>Defeito / avaria</label><textarea id="${key}-defect-desc" placeholder="Descreva o defeito..."></textarea></div><div style="margin-top:12px"><label>Intervenção realizada / observações</label><textarea id="${key}-assist-desc" placeholder="Descreva a reparação, oficina, custo..."></textarea></div><div class="actions"><button class="btn btn-primary" data-action="addDefect" data-van="${key}">+ Adicionar ao histórico</button></div><div style="margin-top:18px">${defectsTable(key,van.defects)}</div></div>
+      </div></section>`;
+  }).join('');
+  document.querySelectorAll('.tab-btn').forEach(btn=>{btn.textContent=data[btn.dataset.tab].name || btn.dataset.tab;btn.onclick=()=>setTab(btn.dataset.tab)});
+  setTab(current);
+}
+function kmTable(key,rows){if(!rows.length)return '<div class="empty">Ainda não existem quilómetros registados.</div>';return `<div class="table-wrap"><table><thead><tr><th>Mês</th><th>Quilómetros</th><th>Ações</th></tr></thead><tbody>${[...rows].sort((a,b)=>b.month.localeCompare(a.month)).map(r=>`<tr><td>${formatMonth(r.month)}</td><td>${Number(r.km).toLocaleString('pt-PT')} km</td><td><button class="btn btn-danger btn-small" data-action="deleteKm" data-van="${key}" data-id="${esc(r.id)}">Apagar</button></td></tr>`).join('')}</tbody></table></div>`}
+function defectsTable(key,rows){if(!rows.length)return '<div class="empty">Ainda não existem defeitos ou assistências registados.</div>';return `<div class="table-wrap"><table><thead><tr><th>Data do defeito</th><th>Defeito / avaria</th><th>Data da assistência</th><th>Intervenção / observações</th><th>Ações</th></tr></thead><tbody>${[...rows].sort((a,b)=>(b.defectDate||'').localeCompare(a.defectDate||'')).map(r=>`<tr><td>${formatDate(r.defectDate)}</td><td>${esc(r.description)}</td><td>${formatDate(r.assistDate)}</td><td>${esc(r.assistDescription)}</td><td><button class="btn btn-danger btn-small" data-action="deleteDefect" data-van="${key}" data-id="${esc(r.id)}">Apagar</button></td></tr>`).join('')}</tbody></table></div>`}
+function requireAdmin(){return !!loggedUser && loggedUser.role==='admin' && loggedUser.active}
+function cleanVan(v,index){const base=blankVan(index);return {...base,...v,kms:Array.isArray(v?.kms)?v.kms:[],defects:Array.isArray(v?.defects)?v.defects:[]}}
+async function mutateVan(key,action,details,fn){
+  if(!loggedUser?.active)return alert('É necessário iniciar sessão.');
+  const before=data[key];const after=structuredClone(before); const changed=fn(after);
+  if(changed===false)return;
+  const auditRef=doc(collection(db,'audit'));
+  const batch=writeBatch(db);
+  batch.set(doc(db,'vans',key),after);
+  batch.set(auditRef,{when:serverTimestamp(),uid:auth.currentUser.uid,username:loggedUser.username,van:before.name+(before.plate?' ('+before.plate+')':''),action,details:typeof details==='function'?details(before,after):details});
+  try{message('A guardar…');await batch.commit();message('✓ Sincronizado com Firebase')}catch(e){alert('Não foi possível guardar: '+e.message);message('Erro de sincronização')}
+}
+async function updateField(key,field,value){let previous=data[key][field]||'';if(previous===value)return;const names={name:'Designação',plate:'Matrícula',inspectionDate:'Data da inspeção',revisionDate:'Data da revisão'};await mutateVan(key,'Campo alterado',`${names[field]}: "${previous||'(vazio)'}" → "${value||'(vazio)'}"`,v=>{v[field]=value})}
+async function addKm(key){const month=$(`${key}-km-month`).value,value=$(`${key}-km-value`).value;if(!month||value===''||!Number.isFinite(Number(value))||Number(value)<0||!Number.isInteger(Number(value)))return alert('Preencha mês e quilómetros inteiros não negativos.');const before=data[key].kms.find(r=>r.month===month);if(before&&!confirm('Este mês já existe. Substituir o valor?'))return;await mutateVan(key,before?'Quilometragem alterada':'Quilometragem adicionada',`${month}: ${before?before.km+' km':'(novo)'} → ${Number(value)} km`,v=>{const r=v.kms.find(x=>x.month===month);if(r)r.km=Number(value);else v.kms.push({id:crypto.randomUUID(),month,km:Number(value)})})}
+async function deleteKm(key,id){const r=data[key].kms.find(x=>x.id===id);if(!r||!confirm('Apagar este registo de quilómetros?'))return;await mutateVan(key,'Quilometragem apagada',`${r.month}: ${r.km} km`,v=>{v.kms=v.kms.filter(x=>x.id!==id)})}
+async function addDefect(key){const defectDate=$(`${key}-defect-date`).value,assistDate=$(`${key}-assist-date`).value,description=$(`${key}-defect-desc`).value.trim(),assistDescription=$(`${key}-assist-desc`).value.trim();if(!description)return alert('Indique a avaria.');await mutateVan(key,'Defeito/assistência adicionado',`Defeito ${defectDate||'sem data'}: ${description}; Assistência ${assistDate||'não indicada'}: ${assistDescription||'sem observações'}`,v=>{v.defects.push({id:crypto.randomUUID(),defectDate,assistDate,description,assistDescription})})}
+async function deleteDefect(key,id){const r=data[key].defects.find(x=>x.id===id);if(!r||!confirm('Apagar este registo?'))return;await mutateVan(key,'Defeito/assistência apagado',`${r.defectDate||'sem data'}: ${r.description}; assistência: ${r.assistDate||'não indicada'}`,v=>{v.defects=v.defects.filter(x=>x.id!==id)})}
+$('panels').addEventListener('change',e=>{const el=e.target;if(el.dataset.field&&el.dataset.van)updateField(el.dataset.van,el.dataset.field,el.value)});
+$('panels').addEventListener('click',e=>{const b=e.target.closest('button[data-action]');if(!b)return;({addKm,deleteKm,addDefect,deleteDefect}[b.dataset.action])?.(b.dataset.van,b.dataset.id)});
+function showLogin(msg=''){document.body.classList.add('readonly');$('guestBanner').hidden=false;$('openLogin').hidden=false;$('logoutButton').hidden=true;$('authError').textContent=msg;if(msg)$('loginScreen').classList.add('is-open');message('Inicia sessão para sincronizar os dados')}
+window.toggleLogin=()=>{$('loginScreen').classList.toggle('is-open');if($('loginScreen').classList.contains('is-open'))$('authUsername').focus()};
+window.authenticate=async()=>{if(!configured)return showLogin('Falta configurar o Firebase neste HTML.');try{$('authError').textContent='';await signInWithEmailAndPassword(auth,(u=>u.toLowerCase()==='filipefrancisco'?'filipe.francisco@woltt.pt':u)($('authUsername').value.trim()),$('authPassword').value)}catch(e){$('authError').textContent='Email ou palavra-passe inválidos, ou erro de ligação.'}};
+window.logout=async()=>{if(auth)await signOut(auth)};
+function cleanup(){unsubscribers.forEach(u=>u());unsubscribers=[];loggedUser=null;adminOpened=false;$('adminArea').hidden=true;$('adminArea').classList.remove('is-open');$('adminToggle').hidden=true;document.body.classList.remove('admin-view');$('currentUser').textContent='';data=Object.fromEntries(vanKeys.map((k,i)=>[k,blankVan(i+1)]));render()}
+function subscribe(){
+  vanKeys.forEach((key,i)=>unsubscribers.push(onSnapshot(doc(db,'vans',key),s=>{data[key]=cleanVan(s.exists()?s.data():{},i+1);render();message('✓ Dados sincronizados em tempo real')},err=>message('Erro a ler carrinhas: '+err.message))));
+  if(requireAdmin()){
+    unsubscribers.push(onSnapshot(collection(db,'users'),s=>{accounts=s.docs.map(d=>({uid:d.id,...d.data()}));if(adminOpened)renderAdmin()}));
+    unsubscribers.push(onSnapshot(query(collection(db,'audit'),orderBy('when','desc'),limit(1000)),s=>{audit=s.docs.map(d=>({id:d.id,...d.data()}));if(adminOpened)renderAdmin()}));
+  }
+}
+render();document.body.classList.add('readonly');showLogin();if(configured){setPersistence(auth,browserLocalPersistence).catch(()=>{});onAuthStateChanged(auth,async(user)=>{
+  cleanup();if(!user){showLogin();return}
+  try{const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||profile.data().active!==true){await signOut(auth);return showLogin('Conta sem autorização ou desativada. Contacte o administrador.')}
+    loggedUser={uid:user.uid,...profile.data()};document.body.classList.remove('readonly');$('loginScreen').classList.remove('is-open');$('guestBanner').hidden=true;$('openLogin').hidden=true;$('logoutButton').hidden=false;$('authPassword').value='';$('currentUser').textContent='Sessão: '+(user.email==='filipe.francisco@woltt.pt'?'filipefrancisco':loggedUser.username)+(requireAdmin()?' (Administrador)':'');$('adminToggle').hidden=!requireAdmin();document.body.classList.toggle('admin-view',requireAdmin());render();subscribe();
+  }catch(e){showLogin('Erro ao carregar o perfil: '+e.message)}
+})}else{showLogin('Firebase ainda não configurado. Preencha firebaseConfig no ficheiro HTML.')}
+window.toggleAdmin=()=>{if(!requireAdmin())return;adminOpened=!adminOpened;$('adminArea').hidden=!adminOpened;$('adminArea').classList.toggle('is-open',adminOpened);if(adminOpened){renderAdmin();$('adminArea').scrollIntoView({behavior:'smooth'})}};
+window.createUser=async()=>{
+  if(!requireAdmin())return;
+  const email=$('newUsername').value.trim().toLowerCase(),pwd=$('newPassword').value;
+  if(!email.includes('@')||pwd.length<8)return alert('Introduza um email válido e uma palavra-passe com 8 ou mais caracteres.');
+  let secondary=null;
+  try{
+    // Conta criada numa instância secundária; o administrador mantém a sua sessão.
+    secondary=initializeApp(firebaseConfig,'criar-utilizador-'+Date.now());
+    const secondaryAuth=getAuth(secondary);
+    const result=await createUserWithEmailAndPassword(secondaryAuth,email,pwd);
+    const batch=writeBatch(db);
+    batch.set(doc(db,'users',result.user.uid),{username:email,email,role:'user',active:true,createdAt:serverTimestamp()});
+    batch.set(doc(collection(db,'audit')),{when:serverTimestamp(),uid:auth.currentUser.uid,username:loggedUser.username,van:'Administração',action:'Utilizador criado',details:email});
+    await batch.commit();
+    $('newUsername').value='';$('newPassword').value='';alert('Utilizador criado com sucesso.');
+  }catch(e){alert('Erro ao criar utilizador: '+e.message+' Se a conta de autenticação foi criada mas o perfil falhou, confirme no Firebase Console.')}
+  finally{if(secondary){try{await signOut(getAuth(secondary))}catch{}await deleteApp(secondary)}}
+};
+window.toggleUser=async(uid)=>{if(!requireAdmin())return;const person=accounts.find(x=>x.uid===uid);if(!person||person.role==='admin')return;try{const batch=writeBatch(db);batch.update(doc(db,'users',uid),{active:!person.active});batch.set(doc(collection(db,'audit')),{when:serverTimestamp(),uid:auth.currentUser.uid,username:loggedUser.username,van:'Administração',action:person.active?'Conta desativada':'Conta ativada',details:person.username});await batch.commit()}catch(e){alert(e.message)}};
+window.resetPassword=()=>alert('Para redefinir a palavra-passe de outro utilizador, use Firebase Console → Authentication → Users ou implemente um convite de reposição via serviço de email. O HTML não guarda passwords.');
+function renderAdmin(){if(!requireAdmin())return;$('userList').innerHTML=`<div class="table-wrap"><table><thead><tr><th>Utilizador</th><th>Permissão</th><th>Estado</th><th>Ações</th></tr></thead><tbody>${accounts.map(u=>`<tr><td>${esc(u.username)}</td><td>${u.role==='admin'?'Administrador':'Utilizador'}</td><td>${u.active?'Ativo':'Desativado'}</td><td>${u.role==='admin'?'—':`<button class="btn btn-danger btn-small" data-uid="${esc(u.uid)}">${u.active?'Desativar':'Ativar'}</button>`}</td></tr>`).join('')}</tbody></table></div>`;$('userList').querySelectorAll('[data-uid]').forEach(b=>b.onclick=()=>toggleUser(b.dataset.uid));$('auditList').innerHTML=audit.length?`<div class="table-wrap"><table><thead><tr><th>Data/hora</th><th>Utilizador</th><th>Carrinha</th><th>Ação</th><th>Detalhes</th></tr></thead><tbody>${audit.map(a=>`<tr><td>${a.when?.toDate?a.when.toDate().toLocaleString('pt-PT'):'A sincronizar'}</td><td>${esc(a.username)}</td><td>${esc(a.van)}</td><td>${esc(a.action)}</td><td>${esc(a.details)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted">Ainda não existem registos.</p>'}
+window.exportAudit=()=>{if(!requireAdmin())return;const rows=[['Data/hora','Utilizador','Carrinha','Ação','Detalhes'],...audit.map(a=>[a.when?.toDate?a.when.toDate().toLocaleString('pt-PT'):'',a.username,a.van,a.action,a.details])];const csv=rows.map(r=>r.map(x=>'"'+String(x||'').replaceAll('"','""')+'"').join(';')).join('\r\n');const blob=new Blob(['\ufeff',csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='historico_carrinhas.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)};
+</script>
+</body>
+</html>
